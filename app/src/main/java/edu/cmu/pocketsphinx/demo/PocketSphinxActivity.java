@@ -68,10 +68,9 @@ public class PocketSphinxActivity extends Activity implements
             }
 
             @Override
-            protected void onPostExecute(Exception result) {
-                if (result != null) {
-                    ((TextView) findViewById(R.id.caption_text))
-                            .setText("Failed to init recognizer " + result);
+            protected void onPostExecute(Exception ex) {
+                if (ex != null) {
+                    makeText(getApplicationContext(), "Failed to init recognizer " + ex, Toast.LENGTH_SHORT).show();
                 } else {
                     breakSearch(VOCABULARY);
                 }
@@ -168,7 +167,7 @@ public class PocketSphinxActivity extends Activity implements
 
     @Override
     public void onError(Exception error) {
-        ((TextView) findViewById(R.id.caption_text)).setText(error.getMessage());
+        makeText(getApplicationContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
     }
 
     @Override
