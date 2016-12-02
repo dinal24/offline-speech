@@ -33,15 +33,15 @@ public class PocketSphinxActivity extends Activity implements
 
     private SpeechRecognizer recognizer;
 
+    private String result = "";
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
 
         // Prepare the data for UI
         setContentView(R.layout.main);
-        ((TextView) findViewById(R.id.caption_text))
-                .setText("Preparing the recognizer");
-
+        makeText(getApplicationContext(), "Preparing the recognizer", Toast.LENGTH_LONG).show();
         // Check if user has given permission to record audio
         int permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO);
         if (permissionCheck == PackageManager.PERMISSION_DENIED) {
@@ -122,10 +122,10 @@ public class PocketSphinxActivity extends Activity implements
      */
     @Override
     public void onResult(Hypothesis hypothesis) {
-        //((TextView) findViewById(R.id.result_text)).setText("");
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
-            ((TextView) findViewById(R.id.result_text)).setText(text);
+            result = result + " " + text;
+            ((TextView) findViewById(R.id.result_text)).setText(result);
             recognizer.cancel();
             recognizer.startListening(VOCABULARY);
             Log.i("onResult", text);
