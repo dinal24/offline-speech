@@ -7,12 +7,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
@@ -73,7 +73,7 @@ public class PocketSphinxActivity extends Activity implements
                     ((TextView) findViewById(R.id.caption_text))
                             .setText("Failed to init recognizer " + result);
                 } else {
-                    switchSearch(VOCABULARY);
+                    breakSearch(VOCABULARY);
                 }
             }
         }.execute();
@@ -112,9 +112,9 @@ public class PocketSphinxActivity extends Activity implements
     public void onPartialResult(Hypothesis hypothesis) {
         if (hypothesis == null)
             return;
-
         String text = hypothesis.getHypstr();
         makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+        Log.i("onPartialResult", text);
     }
 
     /**
@@ -128,6 +128,7 @@ public class PocketSphinxActivity extends Activity implements
             ((TextView) findViewById(R.id.result_text)).setText(text);
             recognizer.cancel();
             recognizer.startListening(VOCABULARY);
+            Log.i("onResult", text);
         }
     }
 
@@ -140,18 +141,13 @@ public class PocketSphinxActivity extends Activity implements
      */
     @Override
     public void onEndOfSpeech() {
-//        if (!recognizer.getSearchName().equals(VOCABULARY))
-//            switchSearch(VOCABULARY);
+        breakSearch(VOCABULARY);
+        Log.i("onEndOfSpeech", "Entered");
     }
 
-    private void switchSearch(String searchName) {
+    private void breakSearch(String searchName) {
         recognizer.stop();
-
-        // If we are not spotting, start listening with timeout (10000000 ms or 1000 seconds).
-//        if (searchName.equals(VOCABULARY))
         recognizer.startListening(searchName);
-//        else
-//        recognizer.startListening(searchName, 1000000);
     }
 
     private void setupRecognizer(File assetsDir) throws IOException {
@@ -161,16 +157,13 @@ public class PocketSphinxActivity extends Activity implements
         recognizer = SpeechRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, "en-us-ptm"))
                 .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
-
-                .setRawLogDir(assetsDir) // To disable logging of raw audio comment out this call (takes a lot of space on the device)
-
                 .getRecognizer();
         recognizer.addListener(this);
 
 
         // Create grammar-based search for selection between demos
-        File menuGrammar = new File(assetsDir, "voc.gram");
-        recognizer.addGrammarSearch(VOCABULARY, menuGrammar);
+        File vocabulary = new File(assetsDir, "voc.gram");
+        recognizer.addGrammarSearch(VOCABULARY, vocabulary);
     }
 
     @Override
@@ -180,6 +173,7 @@ public class PocketSphinxActivity extends Activity implements
 
     @Override
     public void onTimeout() {
-        switchSearch(VOCABULARY);
+        breakSearch(VOCABULARY);
+        Log.i("onTimeout", "Entered");
     }
 }
