@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +35,7 @@ public class PocketSphinxActivity extends Activity implements
 
     private SpeechRecognizer recognizer;
 
+    private boolean isListening = false;
     private String result = "";
 
     @Override
@@ -72,11 +75,25 @@ public class PocketSphinxActivity extends Activity implements
                 if (ex != null) {
                     makeText(getApplicationContext(), "Failed to init recognizer " + ex, Toast.LENGTH_SHORT).show();
                 } else {
-                    breakSearch(VOCABULARY);
+                    final Button btn = (Button) findViewById(R.id.button);
+                    btn.setClickable(true);
+                    btn.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View view) {
+                            boolean listening = toggleSearch();
+                            if(listening)
+                                btn.setText("STOP");
+                            else
+                                btn.setText("START");
+                        }
+                    });
                 }
             }
         }.execute();
     }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -112,7 +129,7 @@ public class PocketSphinxActivity extends Activity implements
         if (hypothesis == null)
             return;
         String text = hypothesis.getHypstr();
-        makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+        // makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
         Log.i("onPartialResult", text);
     }
 
@@ -126,7 +143,8 @@ public class PocketSphinxActivity extends Activity implements
             result = result + " " + text;
             ((TextView) findViewById(R.id.result_text)).setText(result);
             recognizer.cancel();
-            recognizer.startListening(VOCABULARY);
+            if(isListening)
+                recognizer.startListening(VOCABULARY);
             Log.i("onResult", text);
         }
     }
@@ -142,6 +160,17 @@ public class PocketSphinxActivity extends Activity implements
     public void onEndOfSpeech() {
         breakSearch(VOCABULARY);
         Log.i("onEndOfSpeech", "Entered");
+    }
+
+    private boolean toggleSearch(){
+        isListening = !isListening;
+        if(!isListening)
+            recognizer.stop();
+        else
+            result = "";
+            ((TextView) findViewById(R.id.result_text)).setText(result);
+            recognizer.startListening(VOCABULARY);
+        return isListening;
     }
 
     private void breakSearch(String searchName) {

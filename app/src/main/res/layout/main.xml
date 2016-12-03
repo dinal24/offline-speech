@@ -15,4 +15,14 @@
         android:textColor="@color/grey"
         android:textSize="26dp"
         android:textStyle="normal" />
+
+    <Button
+        android:text="START"
+        android:clickable="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="26dp"
+        android:id="@+id/button" />
 </RelativeLayout>
